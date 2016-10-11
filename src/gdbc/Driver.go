@@ -5,24 +5,45 @@ import (
 )
 
 type DbError interface {
-
 	GetErrorCode() int
 
 	GetErrorMessage() string
 }
 
-type Drive interface {
-	Connect(driver string, properties map[string]string) (connection Connection, error DbError)
+type Driver interface {
+	/*
+	Attempts to make a database connection to the given URL.
+	The driver should return "false" if it realizes it is the wrong kind of driver to connect to the given URL.
+	This will be common, as when the GDBC driver manager is asked to connect to a given URL
+	it passes the URL to each loaded driver in turn.
+
+	The properties argument can be used to pass arbitrary string tag/value pairs as connection arguments.
+	Normally at least "user" and "password" properties should be included in the Properties object.
+
+	Note: If a property is specified as part of the url and is also specified in the Properties object,
+	it is implementation-defined as to which value will take precedence.
+	For maximum portability, an application should only specify a property once.
+
+	Parameters:
+	url - the URL of the database to which to connect
+	info - a list of arbitrary string tag/value pairs as connection arguments.
+	Normally at least a "user" and "password" property should be included.
+	Returns:
+	a Connection object that represents a connection to the URL
+	 */
+	Connect(url string, info map[string]string) (connection Connection, bool)
+
+
 }
 
-type Connection interface{
+type Connection interface {
 	CreateStatement() (statement Statement, error DbError)
 
 	PrepareStatement(sql string) (prepareStatement PrepareStatement, error DbError)
 
 	SetAutoCommit(autoCommit bool) DbError
 
-	GetAutoCommit()(autoCommit bool, error DbError)
+	GetAutoCommit() (autoCommit bool, error DbError)
 
 	Commit() DbError
 
@@ -31,24 +52,22 @@ type Connection interface{
 	Close() DbError
 
 	IsClose() (isClose bool, error DbError)
-
 }
 
-
-type Statement interface{
+type Statement interface {
 	ExecuteQuery() (result ResultSet, error DbError)
 
 	ExecuteUpdate() (result int, error DbError)
 
-	Execute()(result bool, error DbError)
+	Execute() (result bool, error DbError)
 
 	Close() DbError
 
-	GetMaxFieldSize()(max int, error DbError)
+	GetMaxFieldSize() (max int, error DbError)
 
 	SetMaxFieldSize(max int) DbError
 
-	GetMaxRows()(max int, error DbError)
+	GetMaxRows() (max int, error DbError)
 
 	SetMaxRows(max int) DbError
 
@@ -62,11 +81,10 @@ type Statement interface{
 
 	GetConnection() (connect Connection, error DbError)
 
-	IsClose()(isClose bool, error DbError)
+	IsClose() (isClose bool, error DbError)
 }
 
 type ResultSet interface {
-
 	Next() (result bool, error DbError)
 
 	CLose() DbError
@@ -123,29 +141,27 @@ type ResultSet interface {
 	//
 	IsFirst() (result bool, error DbError)
 
-	IsLast()(result bool, error DbError)
+	IsLast() (result bool, error DbError)
 
-	First()(result bool, error DbError)
+	First() (result bool, error DbError)
 
-	Last()(result bool, error DbError)
+	Last() (result bool, error DbError)
 
-	GetRow()(result int, error DbError)
+	GetRow() (result int, error DbError)
 
-	Absolute(row int)(result bool, error DbError)
+	Absolute(row int) (result bool, error DbError)
 
-	Relative(row int)(result bool, error DbError)
+	Relative(row int) (result bool, error DbError)
 
-	Previous()(result bool, error DbError)
-
+	Previous() (result bool, error DbError)
 }
 
 type PrepareStatement interface {
-
 	ExecuteQuery() (result ResultSet, error DbError)
 
 	ExecuteUpdate() (result int, error DbError)
 
-	Execute()(result bool, error DbError)
+	Execute() (result bool, error DbError)
 
 	SetNull(parameterIndex int, sqlType int) DbError
 
@@ -169,8 +185,7 @@ type PrepareStatement interface {
 
 	SetString(parameterIndex int, x string) DbError
 
-	SetBytes(parameterIndex int, x [] byte) DbError
+	SetBytes(parameterIndex int, x []byte) DbError
 
 	SetTime(parameterIndex int, x time.Time) DbError
-
 }

@@ -1,6 +1,5 @@
 package oracle
 
-
 //#cgo CFLAGS: -I /Users/xiebo/oracle/source/sdk/include
 //#cgo LDFLAGS: -L /Users/xiebo/oracle/lib -lclntsh
 //#include "stdlib.h"
@@ -8,9 +7,9 @@ package oracle
 //#include "stdio.h"
 import "C"
 import (
-	"unsafe"
 	. "gdbc"
 	"strconv"
+	"unsafe"
 )
 
 type OCIEnv struct {
@@ -22,18 +21,18 @@ type OCIError struct {
 	errorMsg  string
 }
 
-func (error *OCIError)GetErrorCode() int {
+func (error *OCIError) GetErrorCode() int {
 	return error.errorCode
 }
 
-func (error *OCIError)GetErrorMessage() string {
+func (error *OCIError) GetErrorMessage() string {
 	return error.errorMsg
 }
 
 func OciFail(ociCode C.sword) bool {
 	switch ociCode {
 	case OCI_SUCCESS:
-		return false;
+		return false
 	case OCI_SUCCESS_WITH_INFO:
 		WriteInfoDbLog("OCI_SUCCESS_WITH_INFO")
 		return false
@@ -71,10 +70,11 @@ type OciConnection struct {
 	ociSvcCtx  unsafe.Pointer
 	ociSession unsafe.Pointer
 	ociError   unsafe.Pointer
-	userName   string
-	password   string
-	dblink     string
-	env        OCIEnv
+
+	UserName string
+	Password string
+	Dblink   string
+	env      OCIEnv
 }
 
 func OCIAllocConnection(env OCIEnv) (conn OciConnection, ok bool) {
@@ -85,19 +85,19 @@ func OCIAllocConnection(env OCIEnv) (conn OciConnection, ok bool) {
 	}
 
 	oraCode = C.OCIHandleAlloc(env.envhpp, &conn.ociServer, OCI_HTYPE_SERVER, 0, nil)
-	if (OciFail(oraCode)) {
+	if OciFail(oraCode) {
 		WriteFatalDbLog("OCIHandleAlloc OCI_HTYPE_SERVER fail! oraCode = ", oraCode)
 		return conn, false
 	}
 
 	oraCode = C.OCIHandleAlloc(env.envhpp, &conn.ociSession, OCI_HTYPE_SESSION, 0, nil)
-	if (OciFail(oraCode)) {
+	if OciFail(oraCode) {
 		WriteFatalDbLog("OCIHandleAlloc OCI_HTYPE_SESSION fail! oraCode = ", oraCode)
 		return conn, false
 	}
 
 	oraCode = C.OCIHandleAlloc(env.envhpp, &conn.ociSvcCtx, OCI_HTYPE_SVCCTX, 0, nil)
-	if (OciFail(oraCode)) {
+	if OciFail(oraCode) {
 		WriteFatalDbLog("OCIHandleAlloc OCI_HTYPE_SVCCTX fail! oraCode = ", oraCode)
 		return conn, false
 	}
@@ -215,12 +215,12 @@ func OCIServerAttach(env OCIEnv, userName string, password string, dblink string
 		return conn, false
 	}
 
-	conn.userName = userName
-	conn.password = password
-	conn.dblink = dblink
+	conn.UserName = userName
+	conn.Password = password
+	conn.Dblink = dblink
 
 	oraCode := C.OCIServerAttach(conn.ociServer, conn.ociError,
-		(*C.OraText)((unsafe.Pointer)(C.CString(conn.dblink))), C.sb4(len(conn.dblink)), OCI_DEFAULT)
+		(*C.OraText)((unsafe.Pointer)(C.CString(conn.Dblink))), C.sb4(len(conn.Dblink)), OCI_DEFAULT)
 	if OciFail(oraCode) {
 		WriteErrorDbLogf("OCIServerAttach failed! dblink=%s, %s", dblink, GetOciErrorMsg(&conn))
 		goto OUT
@@ -264,9 +264,8 @@ func OCIServerAttach(env OCIEnv, userName string, password string, dblink string
 
 	return conn, true
 
-	OUT:
+OUT:
 	OCIServerDetach(&conn)
 
 	return conn, false
 }
-

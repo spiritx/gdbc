@@ -7,18 +7,18 @@ package oracle
 //#include "stdio.h"
 import "C"
 import (
-	"unsafe"
 	. "gdbc"
+	"unsafe"
 )
 
 type OCIStatement struct {
 	ociStmt unsafe.Pointer
-	conn *OciConnection
-	sql string
+	conn    *OciConnection
+	sql     string
 }
 
 func OCIStmtRelease(stmt *OCIStatement) {
-	if (stmt == nil || stmt.ociStmt == nil) {
+	if stmt == nil || stmt.ociStmt == nil {
 		return
 	}
 
@@ -50,16 +50,16 @@ func OCIStmtPrepare(conn OciConnection, sql string) (stmt OCIStatement, ok bool)
 }
 
 type OCIField struct {
-	Name string
-	Type int
-	Size int
+	Name      string
+	Type      int
+	Size      int
 	Precision int
-	Scale int
+	Scale     int
 }
 
-func OCIGetFieldDescByIndex(stmt *OCIStatement, index int)(field OCIField, ok bool) {
+func OCIGetFieldDescByIndex(stmt *OCIStatement, index int) (field OCIField, ok bool) {
 	var ociParam unsafe.Pointer
-	oraCode := C.OCIParamGet(stmt.ociStmt, OCI_HTYPE_STMT, stmt.conn.ociError, &ociParam, C.ub4(index + 1))
+	oraCode := C.OCIParamGet(stmt.ociStmt, OCI_HTYPE_STMT, stmt.conn.ociError, &ociParam, C.ub4(index+1))
 	if OciFail(oraCode) {
 		WriteErrorDbLogf("OCIParamGet OCI_HTYPE_STMT fail! oraCode = %d, %s", oraCode, GetOciErrorMsg(stmt.conn))
 		return field, false
@@ -121,8 +121,7 @@ func OCIGetFieldDescByIndex(stmt *OCIStatement, index int)(field OCIField, ok bo
 	return field, true
 }
 
-
-func OCIGetStmtParamCount(stmt *OCIStatement) (int, bool){
+func OCIGetStmtParamCount(stmt *OCIStatement) (int, bool) {
 	var paramCount C.ub4
 	oraCode := C.OCIAttrGet(stmt.ociStmt, C.OCI_HTYPE_STMT, unsafe.Pointer(&paramCount), nil,
 		C.OCI_ATTR_PARAM_COUNT, stmt.conn.ociError)
@@ -135,4 +134,3 @@ func OCIGetStmtParamCount(stmt *OCIStatement) (int, bool){
 
 	return int(paramCount), true
 }
-
