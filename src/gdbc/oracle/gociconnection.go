@@ -34,10 +34,10 @@ func OciFail(ociCode C.sword) bool {
 	case OCI_SUCCESS:
 		return false
 	case OCI_SUCCESS_WITH_INFO:
-		WriteInfoDbLog("OCI_SUCCESS_WITH_INFO")
+		InfoLog("OCI_SUCCESS_WITH_INFO")
 		return false
 	case OCI_NO_DATA:
-		WriteInfoDbLog("OCI_NO_DATA")
+		InfoLog("OCI_NO_DATA")
 		return false
 	default:
 		return true
@@ -53,7 +53,7 @@ func OCIEnvCreate(mode uint32) (env OCIEnv, errorCode int) {
 
 	if OciFail(oraCode) {
 		errorCode = int(oraCode)
-		WriteFatalDbLog("OCIEnvCreate fail!")
+		FatalLog("OCIEnvCreate fail!")
 	} else {
 		errorCode = 0
 	}
@@ -80,25 +80,25 @@ type OciConnection struct {
 func OCIAllocConnection(env OCIEnv) (conn OciConnection, ok bool) {
 	oraCode := C.OCIHandleAlloc(env.envhpp, &conn.ociError, OCI_HTYPE_ERROR, 0, nil)
 	if OciFail(oraCode) {
-		WriteFatalDbLog("OCIHandleAlloc OCI_HTYPE_ERROR fail! oraCode = ", oraCode)
+		FatalLog("OCIHandleAlloc OCI_HTYPE_ERROR fail! oraCode = ", oraCode)
 		return conn, false
 	}
 
 	oraCode = C.OCIHandleAlloc(env.envhpp, &conn.ociServer, OCI_HTYPE_SERVER, 0, nil)
 	if OciFail(oraCode) {
-		WriteFatalDbLog("OCIHandleAlloc OCI_HTYPE_SERVER fail! oraCode = ", oraCode)
+		FatalLog("OCIHandleAlloc OCI_HTYPE_SERVER fail! oraCode = ", oraCode)
 		return conn, false
 	}
 
 	oraCode = C.OCIHandleAlloc(env.envhpp, &conn.ociSession, OCI_HTYPE_SESSION, 0, nil)
 	if OciFail(oraCode) {
-		WriteFatalDbLog("OCIHandleAlloc OCI_HTYPE_SESSION fail! oraCode = ", oraCode)
+		FatalLog("OCIHandleAlloc OCI_HTYPE_SESSION fail! oraCode = ", oraCode)
 		return conn, false
 	}
 
 	oraCode = C.OCIHandleAlloc(env.envhpp, &conn.ociSvcCtx, OCI_HTYPE_SVCCTX, 0, nil)
 	if OciFail(oraCode) {
-		WriteFatalDbLog("OCIHandleAlloc OCI_HTYPE_SVCCTX fail! oraCode = ", oraCode)
+		FatalLog("OCIHandleAlloc OCI_HTYPE_SVCCTX fail! oraCode = ", oraCode)
 		return conn, false
 	}
 
@@ -109,34 +109,34 @@ func OCIAllocConnection(env OCIEnv) (conn OciConnection, ok bool) {
 
 func OCIFreeConnection(conn *OciConnection) {
 	if conn == nil {
-		WriteDebugDbLog("connection is nil")
+		DebugLog("connection is nil")
 		return
 	}
 
 	if conn.ociSvcCtx != nil {
 		if oraCode := C.OCIHandleFree(conn.ociSvcCtx, OCI_HTYPE_SVCCTX); oraCode != 0 {
-			WriteFatalDbLog("OCIHandleFree OCI_HTYPE_SVCCTX fail! oraCode = ", oraCode)
+			FatalLog("OCIHandleFree OCI_HTYPE_SVCCTX fail! oraCode = ", oraCode)
 		}
 		conn.ociSvcCtx = nil
 	}
 
 	if conn.ociSession != nil {
 		if oraCode := C.OCIHandleFree(conn.ociSession, OCI_HTYPE_SESSION); oraCode != 0 {
-			WriteFatalDbLog("OCIHandleFree OCI_HTYPE_SESSION fail! oraCode = ", oraCode)
+			FatalLog("OCIHandleFree OCI_HTYPE_SESSION fail! oraCode = ", oraCode)
 		}
 		conn.ociSession = nil
 	}
 
 	if conn.ociServer != nil {
 		if oraCode := C.OCIHandleFree(conn.ociServer, OCI_HTYPE_SERVER); oraCode != 0 {
-			WriteFatalDbLog("OCIHandleFree OCI_HTYPE_SERVER fail! oraCode = ", oraCode)
+			FatalLog("OCIHandleFree OCI_HTYPE_SERVER fail! oraCode = ", oraCode)
 		}
 		conn.ociServer = nil
 	}
 
 	if conn.ociError != nil {
 		if oraCode := C.OCIHandleFree(conn.ociError, OCI_HTYPE_ERROR); oraCode != 0 {
-			WriteFatalDbLog("OCIHandleFree OCI_HTYPE_ERROR fail! oraCode = ", oraCode)
+			FatalLog("OCIHandleFree OCI_HTYPE_ERROR fail! oraCode = ", oraCode)
 		}
 		conn.ociError = nil
 	}
@@ -183,7 +183,7 @@ func OCIServerDetach(conn *OciConnection) {
 	oraCode := C.OCIHandleAlloc(conn.env.envhpp, &ociError, OCI_HTYPE_ERROR, 0, nil)
 	if OciFail(oraCode) {
 		errorCode, msg := getOciError(ociError)
-		WriteFatalDbLog("OCIHandleAlloc OCI_HTYPE_ERROR fail! oraCode = , %d, %s", oraCode, errorCode, msg)
+		FatalLog("OCIHandleAlloc OCI_HTYPE_ERROR fail! oraCode = , %d, %s", oraCode, errorCode, msg)
 		return
 	}
 
@@ -191,7 +191,7 @@ func OCIServerDetach(conn *OciConnection) {
 		oraCode = C.OCISessionEnd(conn.ociSvcCtx, ociError, conn.ociSession, C.ub4(0))
 		if OciFail(oraCode) {
 			errorCode, msg := getOciError(ociError)
-			WriteFatalDbLog("OCISessionEnd fail.oraCode =%d, %d, %s", oraCode, errorCode, msg)
+			FatalLog("OCISessionEnd fail.oraCode =%d, %d, %s", oraCode, errorCode, msg)
 		}
 	}
 
@@ -199,7 +199,7 @@ func OCIServerDetach(conn *OciConnection) {
 		oraCode = C.OCIServerDetach(conn.ociServer, ociError, OCI_DEFAULT)
 		if OciFail(oraCode) {
 			errorCode, msg := getOciError(ociError)
-			WriteFatalDbLog("OCIServerDetach fail.oraCode =%d, %d, %s", oraCode, errorCode, msg)
+			FatalLog("OCIServerDetach fail.oraCode =%d, %d, %s", oraCode, errorCode, msg)
 		}
 	}
 
@@ -210,7 +210,7 @@ func OCIServerAttach(env OCIEnv, userName string, password string, dblink string
 
 	conn, ok = OCIAllocConnection(env)
 	if !ok {
-		WriteFatalDbLog("OCIAllocConnection Fail")
+		FatalLog("OCIAllocConnection Fail")
 		OCIFreeConnection(&conn)
 		return conn, false
 	}
@@ -222,20 +222,20 @@ func OCIServerAttach(env OCIEnv, userName string, password string, dblink string
 	oraCode := C.OCIServerAttach(conn.ociServer, conn.ociError,
 		(*C.OraText)((unsafe.Pointer)(C.CString(conn.Dblink))), C.sb4(len(conn.Dblink)), OCI_DEFAULT)
 	if OciFail(oraCode) {
-		WriteErrorDbLogf("OCIServerAttach failed! dblink=%s, %s", dblink, GetOciErrorMsg(&conn))
+		ErrorLogf("OCIServerAttach failed! dblink=%s, %s", dblink, GetOciErrorMsg(&conn))
 		goto OUT
 	}
 
 	oraCode = C.OCIAttrSet(conn.ociSvcCtx, OCI_HTYPE_SVCCTX, conn.ociServer, 0, OCI_ATTR_SERVER, conn.ociError)
 	if OciFail(oraCode) {
-		WriteErrorDbLogf("OCIAttrSet OCI_HTYPE_SVCCTX failed! dblink=%s, %s", dblink, GetOciErrorMsg(&conn))
+		ErrorLogf("OCIAttrSet OCI_HTYPE_SVCCTX failed! dblink=%s, %s", dblink, GetOciErrorMsg(&conn))
 		goto OUT
 	}
 
 	oraCode = C.OCIAttrSet(conn.ociSession, OCI_HTYPE_SESSION,
 		unsafe.Pointer(C.CString(userName)), C.ub4(len(userName)), OCI_ATTR_USERNAME, conn.ociError)
 	if OciFail(oraCode) {
-		WriteErrorDbLogf("OCIAttrSet OCI_HTYPE_SESSION failed! dblink=%s, userName =%s, %s",
+		ErrorLogf("OCIAttrSet OCI_HTYPE_SESSION failed! dblink=%s, userName =%s, %s",
 			dblink, userName, GetOciErrorMsg(&conn))
 		goto OUT
 	}
@@ -243,21 +243,21 @@ func OCIServerAttach(env OCIEnv, userName string, password string, dblink string
 	oraCode = C.OCIAttrSet(conn.ociSession, OCI_HTYPE_SESSION,
 		unsafe.Pointer(C.CString(password)), C.ub4(len(password)), OCI_ATTR_PASSWORD, conn.ociError)
 	if OciFail(oraCode) {
-		WriteErrorDbLogf("OCIAttrSet OCI_HTYPE_SESSION failed! dblink=%s, userName =%s, password=%s, %s",
+		ErrorLogf("OCIAttrSet OCI_HTYPE_SESSION failed! dblink=%s, userName =%s, password=%s, %s",
 			dblink, userName, password, GetOciErrorMsg(&conn))
 		goto OUT
 	}
 
 	oraCode = C.OCISessionBegin(conn.ociSvcCtx, conn.ociError, conn.ociSession, OCI_CRED_RDBMS, OCI_DEFAULT)
 	if OciFail(oraCode) {
-		WriteErrorDbLogf("OCISessionBegin failed! dblink=%s, userName =%s, password=%s, %s",
+		ErrorLogf("OCISessionBegin failed! dblink=%s, userName =%s, password=%s, %s",
 			dblink, userName, password, GetOciErrorMsg(&conn))
 		goto OUT
 	}
 
 	oraCode = C.OCIAttrSet(conn.ociSvcCtx, OCI_HTYPE_SVCCTX, conn.ociSession, 0, OCI_ATTR_SESSION, conn.ociError)
 	if OciFail(oraCode) {
-		WriteErrorDbLogf("OCIAttrSet OCI_HTYPE_SVCCTX OCI_ATTR_SESSION failed! dblink=%s, userName =%s, password=%s, %s",
+		ErrorLogf("OCIAttrSet OCI_HTYPE_SVCCTX OCI_ATTR_SESSION failed! dblink=%s, userName =%s, password=%s, %s",
 			dblink, userName, password, GetOciErrorMsg(&conn))
 		goto OUT
 	}
