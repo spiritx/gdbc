@@ -1,11 +1,11 @@
 package gdbc
 
 import (
-	"testing"
 	"fmt"
-	"runtime"
-	"path/filepath"
 	"os"
+	"path/filepath"
+	"runtime"
+	"testing"
 )
 
 func TestDebugLog(t *testing.T) {
@@ -135,10 +135,6 @@ func BenchmarkDebugLog(b *testing.B) {
 	}
 
 }
-
-
-
-
 
 func BenchmarkDbLog_WriteDbLog2(b *testing.B) {
 	count := 10

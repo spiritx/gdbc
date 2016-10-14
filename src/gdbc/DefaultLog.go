@@ -9,7 +9,6 @@ import (
 	"time"
 )
 
-
 type DefaultLog struct {
 	path       string
 	file       string
@@ -181,7 +180,4 @@ func (log *DefaultLog) WriteDbLogf(level string, head string, format string, v .
 	return true
 }
 
-
-
 var _ bool = SetDefautDbLog(NewDbLog(".", "db", "TRACE|DEBUG|INFO|WARN|ERROR|FATAL", 5*1024*1024))
-

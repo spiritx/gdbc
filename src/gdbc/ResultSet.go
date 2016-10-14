@@ -73,4 +73,3 @@ type ResultSet interface {
 
 	Previous() (result bool, error DbError)
 }
-

@@ -29,7 +29,7 @@ func OCIStmtRelease(stmt *OCIStatement) {
 
 func OCIStmtPrepare(conn OciConnection, sql string) (stmt OCIStatement, ok bool) {
 	oraCode := C.OCIHandleAlloc(conn.env.envhpp, &stmt.ociStmt, OCI_HTYPE_STMT, 0, nil)
-	if OciFail(oraCode) {
+	if OCIFail(oraCode) {
 		FatalLog("OCIHandleAlloc OCI_HTYPE_STMT fail! oraCode = ", oraCode)
 		return stmt, false
 	}
@@ -40,7 +40,7 @@ func OCIStmtPrepare(conn OciConnection, sql string) (stmt OCIStatement, ok bool)
 	oraCode = C.OCIStmtPrepare(stmt.ociStmt, conn.ociError,
 		(*C.OraText)(unsafe.Pointer(C.CString(sql))), C.ub4(len(sql)), OCI_NTV_SYNTAX, OCI_DEFAULT)
 
-	if OciFail(oraCode) {
+	if OCIFail(oraCode) {
 		FatalLog("OCIStmtPrepare :+ %s +fail! oraCode = ", sql, oraCode)
 		OCIStmtRelease(&stmt)
 		return stmt, false
@@ -60,7 +60,7 @@ type OCIField struct {
 func OCIGetFieldDescByIndex(stmt *OCIStatement, index int) (field OCIField, ok bool) {
 	var ociParam unsafe.Pointer
 	oraCode := C.OCIParamGet(stmt.ociStmt, OCI_HTYPE_STMT, stmt.conn.ociError, &ociParam, C.ub4(index+1))
-	if OciFail(oraCode) {
+	if OCIFail(oraCode) {
 		ErrorLogf("OCIParamGet OCI_HTYPE_STMT fail! oraCode = %d, %s", oraCode, GetOciErrorMsg(stmt.conn))
 		return field, false
 	}
@@ -69,7 +69,7 @@ func OCIGetFieldDescByIndex(stmt *OCIStatement, index int) (field OCIField, ok b
 	var paramType C.ub2
 	oraCode = C.OCIAttrGet(ociParam, OCI_DTYPE_PARAM, unsafe.Pointer(&paramType),
 		nil, C.OCI_ATTR_DATA_TYPE, stmt.conn.ociError)
-	if OciFail(oraCode) {
+	if OCIFail(oraCode) {
 		ErrorLogf("OCIAttrGet OCI_DTYPE_PARAM  OCI_ATTR_DATA_TYPE fail! oraCode = %d, %s",
 			oraCode, GetOciErrorMsg(stmt.conn))
 		return field, false
@@ -80,7 +80,7 @@ func OCIGetFieldDescByIndex(stmt *OCIStatement, index int) (field OCIField, ok b
 	var paramNameLen C.ub4
 	oraCode = C.OCIAttrGet(ociParam, OCI_DTYPE_PARAM, unsafe.Pointer(&paramName),
 		&paramNameLen, C.OCI_ATTR_NAME, stmt.conn.ociError)
-	if OciFail(oraCode) {
+	if OCIFail(oraCode) {
 		ErrorLogf("OCIAttrGet OCI_DTYPE_PARAM  OCI_ATTR_NAME fail! oraCode = %d, %s",
 			oraCode, GetOciErrorMsg(stmt.conn))
 		return field, false
@@ -91,7 +91,7 @@ func OCIGetFieldDescByIndex(stmt *OCIStatement, index int) (field OCIField, ok b
 	var paramSize C.ub2
 	oraCode = C.OCIAttrGet(ociParam, OCI_DTYPE_PARAM, unsafe.Pointer(&paramSize),
 		nil, C.OCI_ATTR_DATA_SIZE, stmt.conn.ociError)
-	if OciFail(oraCode) {
+	if OCIFail(oraCode) {
 		ErrorLogf("OCIAttrGet OCI_DTYPE_PARAM  OCI_ATTR_DATA_SIZE fail! oraCode = %d, %s",
 			oraCode, GetOciErrorMsg(stmt.conn))
 		return field, false
@@ -101,7 +101,7 @@ func OCIGetFieldDescByIndex(stmt *OCIStatement, index int) (field OCIField, ok b
 	var paramPrecision C.ub2
 	oraCode = C.OCIAttrGet(ociParam, OCI_DTYPE_PARAM, unsafe.Pointer(&paramPrecision),
 		nil, C.OCI_ATTR_PRECISION, stmt.conn.ociError)
-	if OciFail(oraCode) {
+	if OCIFail(oraCode) {
 		ErrorLogf("OCIAttrGet OCI_DTYPE_PARAM  OCI_ATTR_PRECISION fail! oraCode = %d, %s",
 			oraCode, GetOciErrorMsg(stmt.conn))
 		return field, false
@@ -111,7 +111,7 @@ func OCIGetFieldDescByIndex(stmt *OCIStatement, index int) (field OCIField, ok b
 	var paramScale C.ub2
 	oraCode = C.OCIAttrGet(ociParam, OCI_DTYPE_PARAM, unsafe.Pointer(&paramScale),
 		nil, C.OCI_ATTR_SCALE, stmt.conn.ociError)
-	if OciFail(oraCode) {
+	if OCIFail(oraCode) {
 		ErrorLogf("OCIAttrGet OCI_DTYPE_PARAM  OCI_ATTR_SCALE fail! oraCode = %d, %s",
 			oraCode, GetOciErrorMsg(stmt.conn))
 		return field, false
@@ -126,7 +126,7 @@ func OCIGetStmtParamCount(stmt *OCIStatement) (int, bool) {
 	oraCode := C.OCIAttrGet(stmt.ociStmt, C.OCI_HTYPE_STMT, unsafe.Pointer(&paramCount), nil,
 		C.OCI_ATTR_PARAM_COUNT, stmt.conn.ociError)
 
-	if OciFail(oraCode) {
+	if OCIFail(oraCode) {
 		ErrorLogf("OCIAttrGet OCI_HTYPE_STMT  OCI_ATTR_PARAM_COUNT fail! oraCode = %d, %s",
 			oraCode, GetOciErrorMsg(stmt.conn))
 		return 0, false

@@ -35,7 +35,7 @@ type DbLog interface {
 
 var defaulDbLog DbLog = nil
 
-func SetDefautDbLog(log DbLog) bool{
+func SetDefautDbLog(log DbLog) bool {
 	defaulDbLog = log
 	return true
 }

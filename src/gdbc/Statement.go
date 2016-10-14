@@ -65,4 +65,3 @@ type PrepareStatement interface {
 
 	SetTime(parameterIndex int, x time.Time) DbError
 }
-

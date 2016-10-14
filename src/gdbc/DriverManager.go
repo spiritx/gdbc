@@ -1,31 +1,31 @@
 package gdbc
 
 import (
-	"sync"
 	"reflect"
+	"sync"
 )
 
 type DriverManager struct {
 	driverList map[string]Driver
-	mutex  sync.Mutex
+	mutex      sync.Mutex
 }
 
 var driverManager DriverManager
 
-func RegisterDriver(driver Driver) bool{
+func RegisterDriver(driver Driver) (error DbError) {
 	driverName := reflect.TypeOf(driver).Name()
 
 	driverManager.mutex.Lock()
 	defer driverManager.mutex.Unlock()
 
 	if _, ok := driverManager.driverList[driverName]; ok {
-		//WriteInfoDbLogf("Driver %s exist!", driverName)
-		return false
+		InfoLogf("Driver %s exist!", driverName)
+		return NewDefaultDbError(-1, "Driver "+driverName+" exist!")
 	}
 
 	driverManager.driverList[driverName] = driver
 
-	return true
+	return nil
 }
 
 func DeregisterDriver(driver Driver) {
@@ -37,7 +37,7 @@ func DeregisterDriver(driver Driver) {
 	delete(driverManager.driverList, driverName)
 }
 
-func checkDriver(driverName string) bool {
+func CheckDriver(driverName string) bool {
 	driverManager.mutex.Lock()
 	defer driverManager.mutex.Unlock()
 
@@ -46,27 +46,29 @@ func checkDriver(driverName string) bool {
 	return ok
 }
 
-func GetConnection(url string) (Connection, bool) {
+func GetConnection(url string) (connection Connection, error DbError) {
 
 	info := make(map[string]string)
 
 	return GetConnectionByProperties(url, info)
 }
 
-func GetConnectionByProperties(url string, info map[string]string) (conn Connection, ok bool) {
+func GetConnectionByProperties(url string, info map[string]string) (conn Connection,
+	error DbError) {
 
 	driverManager.mutex.Lock()
 	defer driverManager.mutex.Unlock()
 	for _, driver := range driverManager.driverList {
-		if conn, ok = driver.Connect(url, info); ok {
-			return conn, ok
+		if conn, error = driver.Connect(url, info); error != nil {
+			return conn, error
 		}
 	}
 
-	return conn, false
+	return conn, nil
 }
 
-func GetConnectionByUser(url string, userName string, password string) (Connection, bool) {
+func GetConnectionByUser(url string, userName string, password string) (connection Connection,
+	error DbError) {
 	info := make(map[string]string)
 
 	info["UserName"] = userName
@@ -74,8 +76,3 @@ func GetConnectionByUser(url string, userName string, password string) (Connecti
 
 	return GetConnectionByProperties(url, info)
 }
-
-
-
-
-

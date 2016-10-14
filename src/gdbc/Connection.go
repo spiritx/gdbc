@@ -3,8 +3,6 @@ package gdbc
 type Connection interface {
 	CreateStatement() (statement Statement, error DbError)
 
-	PrepareStatement(sql string) (prepareStatement PrepareStatement, error DbError)
-
 	SetAutoCommit(autoCommit bool) DbError
 
 	GetAutoCommit() (autoCommit bool, error DbError)
@@ -13,8 +11,7 @@ type Connection interface {
 
 	Rollback() DbError
 
-	Close() DbError
+	GetStatus() int
 
-	IsClose() (isClose bool, error DbError)
+	IsClose() bool
 }
-
