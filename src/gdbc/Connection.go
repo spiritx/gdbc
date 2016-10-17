@@ -14,4 +14,6 @@ type Connection interface {
 	GetStatus() int
 
 	IsClose() bool
+
+	Close() DbError
 }

@@ -1,10 +1,10 @@
 package gdbc
 
+import "fmt"
+
 type DbError interface {
 	Code() int
 	Error() string
-	IsFailure() bool
-	IsOk() bool
 }
 
 type DefaultDbError struct {
@@ -16,6 +16,14 @@ func NewDefaultDbError(errorCode int, errorMsg string) *DefaultDbError {
 	if errorCode == 0 {
 		return nil
 	}
+	return &DefaultDbError{errorCode, errorMsg}
+}
+
+func NewDefaultDbErrorf(errorCode int, format string, v ...interface{}) *DefaultDbError {
+	if errorCode == 0 {
+		return nil
+	}
+	errorMsg := fmt.Sprintf(format, v...)
 	return &DefaultDbError{errorCode, errorMsg}
 }
 

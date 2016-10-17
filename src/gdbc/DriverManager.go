@@ -12,8 +12,15 @@ type DriverManager struct {
 
 var driverManager DriverManager
 
+func init() {
+	driverManager = DriverManager{}
+	driverManager.driverList = make(map[string]Driver)
+}
+
 func RegisterDriver(driver Driver) (error DbError) {
-	driverName := reflect.TypeOf(driver).Name()
+	driverName := reflect.TypeOf(driver).String()
+	//driverName := reflect.ValueOf(driver).Type()
+	DebugLogf("RegisterDriver=%s", driverName)
 
 	driverManager.mutex.Lock()
 	defer driverManager.mutex.Unlock()
@@ -58,6 +65,7 @@ func GetConnectionByProperties(url string, info map[string]string) (conn Connect
 
 	driverManager.mutex.Lock()
 	defer driverManager.mutex.Unlock()
+	DebugLog("driverManager.driverList len=", len(driverManager.driverList))
 	for _, driver := range driverManager.driverList {
 		if conn, error = driver.Connect(url, info); error != nil {
 			return conn, error

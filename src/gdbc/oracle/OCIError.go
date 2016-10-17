@@ -50,7 +50,7 @@ func MakeOCIError(ociError unsafe.Pointer) *OCIError {
 	message := C.GoString((*C.char)(unsafe.Pointer(msg)))
 	C.free(msgC)
 
-	return &OCIError{ociCode: errorCode, ociMsg: message, ociError: ociError}
+	return &OCIError{ociCode: int(errorCode), ociMsg: message, ociError: ociError}
 }
 
 func OCIIsFailure(ociCode int) bool {
@@ -68,26 +68,10 @@ func OCIIsFailure(ociCode int) bool {
 	}
 }
 
-func (this *OCIError) IsFailure() bool {
-	if this == nil {
-		return false
-	}
-
-	return OCIIsFailure(this.ociCode)
+func (error *OCIError) Code() int {
+	return error.ociCode
 }
 
-func (this *OCIError) IsOk() bool {
-	return !this.IsFailure()
-}
-
-func (this *OCIError) Code() int {
-	if this == nil {
-		return OCI_SUCCESS
-	}
-
-	return OCI_SUCCESS
-}
-
-func (this *OCIError) Error() string {
-	return ""
+func (error *OCIError) Error() string {
+	return error.ociMsg
 }

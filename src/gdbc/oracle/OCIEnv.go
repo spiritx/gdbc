@@ -60,36 +60,45 @@ func (env *OCIEnv) Init(info map[string]string) (error DbError) {
 	}
 
 	error = env.Create(mode)
-	if error != nil && error.IsOk() {
+	if error == nil {
 		env.status = OCIENV_NORMAL
 	}
-	return
+	return error
 }
 
 func (env *OCIEnv) GetConnection(info map[string]string) (Connection, DbError) {
 
 	dblink := info[SID]
 	if host, ok := info[HOST]; ok {
-		dblink = host + ":" + info[PORT] + "/" + info[SID]
+		dblink = "//" + host + ":" + info[PORT] + "/" + info[SID]
+	}
+
+	if error := env.Init(info); error != nil {
+		return nil, error
 	}
 
 	conn := OciConnection{}
+	if env.envhpp == nil {
+		DebugLog("env is nil")
+	}
+
 	error := conn.Connect(env, info["UserName"], info["Password"], dblink)
-	return conn, error
+	return &conn, error
 }
 
 func (env *OCIEnv) Create(mode uint32) (error DbError) {
-	var envhpp = (*C.OCIEnv)(env.envhpp)
+	var envhpp *C.OCIEnv
 
-	oraCode := C.OCIEnvCreate(&envhpp,
+	oraCode := int(C.OCIEnvCreate(&envhpp,
 		C.ub4(mode), nil,
-		nil, nil, nil, 0, nil)
+		nil, nil, nil, 0, nil))
 
 	if OCIIsFailure(oraCode) {
 		error = NewOCIError(int(oraCode), "OCIEnvCreate fail!")
 		FatalLog(error.Error())
 		return error
 	}
+	env.envhpp = unsafe.Pointer(envhpp)
 
 	return nil
 }
