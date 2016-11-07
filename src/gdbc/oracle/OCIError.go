@@ -24,7 +24,7 @@ func NewOCIError(ociCode int, v ...interface{}) *OCIError {
 		return nil
 	}
 
-	return &OCIError{ociCode: ociCode, ociMsg: fmt.Sprint(v)}
+	return &OCIError{ociCode: ociCode, ociMsg: fmt.Sprint(v...)}
 }
 
 func NewOCIErrorf(ociCode int, format string, v ...interface{}) *OCIError {
@@ -32,7 +32,7 @@ func NewOCIErrorf(ociCode int, format string, v ...interface{}) *OCIError {
 		return nil
 	}
 
-	return &OCIError{ociCode: ociCode, ociMsg: fmt.Sprintf(format, v)}
+	return &OCIError{ociCode: ociCode, ociMsg: fmt.Sprintf(format, v...)}
 }
 
 func MakeOCIError(ociError unsafe.Pointer) *OCIError {

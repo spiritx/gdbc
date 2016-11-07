@@ -33,31 +33,31 @@ type OciConnection struct {
 
 func (conn *OciConnection) AllocHandle() DbError {
 	if conn == nil || conn.env.envhpp == nil {
-		FatalLog("conn is nil or conn.env is nil")
+		ErrorLog("conn is nil or conn.env is nil")
 		return NewOCIError(-1, "conn is nil or conn.env is nil")
 	}
 
 	oraCode := int(C.OCIHandleAlloc(conn.env.envhpp, &conn.ociError, OCI_HTYPE_ERROR, 0, nil))
 	if OCIIsFailure(oraCode) {
-		FatalLog("OCIHandleAlloc OCI_HTYPE_ERROR fail! oraCode = ", oraCode)
+		ErrorLog("OCIHandleAlloc OCI_HTYPE_ERROR fail! oraCode = ", oraCode)
 		return NewOCIError(oraCode, "OCIHandleAlloc OCI_HTYPE_ERROR fail!")
 	}
 
 	oraCode = int(C.OCIHandleAlloc(conn.env.envhpp, &conn.ociServer, OCI_HTYPE_SERVER, 0, nil))
 	if OCIIsFailure(oraCode) {
-		FatalLog("OCIHandleAlloc OCI_HTYPE_SERVER fail! oraCode = ", oraCode)
+		ErrorLog("OCIHandleAlloc OCI_HTYPE_SERVER fail! oraCode = ", oraCode)
 		return NewOCIError(oraCode, "OCIHandleAlloc OCI_HTYPE_SERVER fail!")
 	}
 
 	oraCode = int(C.OCIHandleAlloc(conn.env.envhpp, &conn.ociSession, OCI_HTYPE_SESSION, 0, nil))
 	if OCIIsFailure(oraCode) {
-		FatalLog("OCIHandleAlloc OCI_HTYPE_SESSION fail! oraCode = ", oraCode)
+		ErrorLog("OCIHandleAlloc OCI_HTYPE_SESSION fail! oraCode = ", oraCode)
 		return NewOCIError(oraCode, "OCIHandleAlloc OCI_HTYPE_SESSION fail!")
 	}
 
 	oraCode = int(C.OCIHandleAlloc(conn.env.envhpp, &conn.ociSvcCtx, OCI_HTYPE_SVCCTX, 0, nil))
 	if OCIIsFailure(oraCode) {
-		FatalLog("OCIHandleAlloc OCI_HTYPE_SVCCTX fail! oraCode = ", oraCode)
+		ErrorLog("OCIHandleAlloc OCI_HTYPE_SVCCTX fail! oraCode = ", oraCode)
 		return NewOCIError(oraCode, "OCIHandleAlloc OCI_HTYPE_SVCCTX fail!")
 	}
 
@@ -72,28 +72,28 @@ func (conn *OciConnection) FreeHandle() {
 
 	if conn.ociSvcCtx != nil {
 		if oraCode := C.OCIHandleFree(conn.ociSvcCtx, OCI_HTYPE_SVCCTX); oraCode != 0 {
-			FatalLog("OCIHandleFree OCI_HTYPE_SVCCTX fail! oraCode = ", oraCode)
+			ErrorLog("OCIHandleFree OCI_HTYPE_SVCCTX fail! oraCode = ", oraCode)
 		}
 		conn.ociSvcCtx = nil
 	}
 
 	if conn.ociSession != nil {
 		if oraCode := C.OCIHandleFree(conn.ociSession, OCI_HTYPE_SESSION); oraCode != 0 {
-			FatalLog("OCIHandleFree OCI_HTYPE_SESSION fail! oraCode = ", oraCode)
+			ErrorLog("OCIHandleFree OCI_HTYPE_SESSION fail! oraCode = ", oraCode)
 		}
 		conn.ociSession = nil
 	}
 
 	if conn.ociServer != nil {
 		if oraCode := C.OCIHandleFree(conn.ociServer, OCI_HTYPE_SERVER); oraCode != 0 {
-			FatalLog("OCIHandleFree OCI_HTYPE_SERVER fail! oraCode = ", oraCode)
+			ErrorLog("OCIHandleFree OCI_HTYPE_SERVER fail! oraCode = ", oraCode)
 		}
 		conn.ociServer = nil
 	}
 
 	if conn.ociError != nil {
 		if oraCode := C.OCIHandleFree(conn.ociError, OCI_HTYPE_ERROR); oraCode != 0 {
-			FatalLog("OCIHandleFree OCI_HTYPE_ERROR fail! oraCode = ", oraCode)
+			ErrorLog("OCIHandleFree OCI_HTYPE_ERROR fail! oraCode = ", oraCode)
 		}
 		conn.ociError = nil
 	}
@@ -104,7 +104,7 @@ func (conn *OciConnection) ServerDetach() (error DbError) {
 	oraCode := int(C.OCIHandleAlloc(conn.env.envhpp, &ociError, OCI_HTYPE_ERROR, 0, nil))
 	if OCIIsFailure(oraCode) {
 		error = MakeOCIError(ociError)
-		FatalLog("OCIHandleAlloc OCI_HTYPE_ERROR fail! oraCode = , %d, %s", oraCode, error.Code(), error.Error())
+		ErrorLogf("OCIHandleAlloc OCI_HTYPE_ERROR fail! oraCode = %d, %d, %s", oraCode, error.Code(), error.Error())
 		return
 	}
 
@@ -112,7 +112,7 @@ func (conn *OciConnection) ServerDetach() (error DbError) {
 		oraCode = int(C.OCISessionEnd(conn.ociSvcCtx, ociError, conn.ociSession, C.ub4(0)))
 		if OCIIsFailure(oraCode) {
 			error = MakeOCIError(ociError)
-			FatalLog("OCISessionEnd fail.oraCode =%d, %d, %s", oraCode, error.Code(), error.Error())
+			ErrorLogf("OCISessionEnd fail.oraCode =%d, %d, %s", oraCode, error.Code(), error.Error())
 		}
 	}
 
@@ -120,7 +120,7 @@ func (conn *OciConnection) ServerDetach() (error DbError) {
 		oraCode = int(C.OCIServerDetach(conn.ociServer, ociError, OCI_DEFAULT))
 		if OCIIsFailure(oraCode) {
 			error = MakeOCIError(ociError)
-			FatalLog("OCIServerDetach fail.oraCode =%d, %d, %s", oraCode, error.Code(), error.Error())
+			ErrorLogf("OCIServerDetach fail.oraCode =%d, %d, %s", oraCode, error.Code(), error.Error())
 		}
 	}
 

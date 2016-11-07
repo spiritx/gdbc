@@ -87,4 +87,5 @@ func (driver *OCIDriver) Connect(url string, info map[string]string) (conn Conne
 func init() {
 	driver := OCIDriver{}
 	RegisterDriver(&driver)
+	DebugLog("load OCIDriver")
 }

@@ -1,75 +1,21 @@
 package gdbc
 
-import "time"
+//import "time"
 
 type ResultSet interface {
-	Next() (result bool, error DbError)
+	Next() (isEnd bool, error DbError)
 
-	CLose() DbError
+	CLose()
 
-	GetString(columIndex int) (result string, error DbError)
+	CloseWithStatement()
 
-	GetBool(olumIndex int) (result bool, error DbError)
+	GetString(index int) (value string, error DbError)
 
-	GetByte(olumIndex int) (result byte, error DbError)
+	GetInt64(index int) (value int64, error DbError)
 
-	GetBytes(olumIndex int) (result []byte, error DbError)
+	GetInt(index int) (value int, error DbError)
 
-	GetInt8(olumIndex int) (result int8, error DbError)
+	GetFloat32(index int) (value float32, error DbError)
 
-	GetInt16(olumIndex int) (result int16, error DbError)
-
-	GetInt32(olumIndex int) (result int32, error DbError)
-
-	GetInt64(olumIndex int) (result int64, error DbError)
-
-	GetInt(olumIndex int) (result int, error DbError)
-
-	GetFloat32(olumIndex int) (result float32, error DbError)
-
-	GetFloat64(olumIndex int) (result float64, error DbError)
-
-	GetTime(olumIndex int) (result time.Time, error DbError)
-
-	//
-	GetStringByName(columIndex int) (result string, error DbError)
-
-	GetBoolByName(columName string) (result bool, error DbError)
-
-	GetByteByName(columName string) (result byte, error DbError)
-
-	GetBytesByName(columName string) (result []byte, error DbError)
-
-	GetInt8ByName(columName string) (result int8, error DbError)
-
-	GetInt16ByName(columName string) (result int16, error DbError)
-
-	GetInt32ByName(columName string) (result int32, error DbError)
-
-	GetInt64ByName(columName string) (result int64, error DbError)
-
-	GetIntByName(columName string) (result int, error DbError)
-
-	GetFloat32ByName(columName string) (result float32, error DbError)
-
-	GetFloat64ByName(columName string) (result float64, error DbError)
-
-	GetTimeByName(columName string) (result time.Time, error DbError)
-
-	//
-	IsFirst() (result bool, error DbError)
-
-	IsLast() (result bool, error DbError)
-
-	First() (result bool, error DbError)
-
-	Last() (result bool, error DbError)
-
-	GetRow() (result int, error DbError)
-
-	Absolute(row int) (result bool, error DbError)
-
-	Relative(row int) (result bool, error DbError)
-
-	Previous() (result bool, error DbError)
+	GetFloat64(index int) (value float64, error DbError)
 }
